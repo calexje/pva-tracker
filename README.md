@@ -187,12 +187,27 @@ framework imports, so the highest-value logic is tested in isolation.
   non-numeric, negative, and an explicit zero, which is valid), and
   line-numbered error reporting including line numbers after a blank line.
 
-Lock enforcement and per-user scoping are verified against the deployed API
-rather than in the suite — locked-month `PUT`/`POST`/import all rejected with
-423 and the stored value confirmed unchanged, a second account unable to read
-or write the first's data, a one-bad-row CSV rejected in full, and a plan of
-zero rendering without `NaN`. Promoting those into automated tests is the first
-item under *What I'd improve*.
+**`npm run verify`** — the rules that live in route handlers rather than pure
+modules, checked over HTTP against a running instance:
+
+```bash
+npm run verify                                  # http://localhost:3000
+node scripts/verify-deploy.mjs https://pva-tracker.vercel.app
+```
+
+Twelve checks: a locked month rejecting plan upserts, new actuals and CSV
+imports with 423 **and** the stored value confirmed unchanged afterwards; one
+account's report containing none of another's rows; a write against another
+account's `categoryId` refused with 404; a one-bad-row CSV rejected in full
+with line numbers that survive a blank line; nothing written by a rejected
+import; `plan = 0` yielding a null variance % with no `NaN` in the payload; and
+all ten domain routes refusing an anonymous caller. It exits non-zero on
+failure, so it can gate a deploy.
+
+It writes as it goes — it creates and reuses a `verify-deploy@example.com`
+account and leaves it behind, since no delete endpoint is in scope. It only
+ever reads the demo account. Turning these into Playwright specs in CI is the
+first item under *What I'd improve*.
 
 ## Assumptions & tradeoffs
 
