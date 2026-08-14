@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { Category } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { categorySchema } from "@/lib/validate";
+import { withErrors } from "@/lib/route";
 
-export async function GET() {
+async function handleGET() {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -12,7 +13,7 @@ export async function GET() {
   return NextResponse.json({ categories });
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -34,3 +35,6 @@ export async function POST(req: NextRequest) {
     throw e;
   }
 }
+
+export const GET = withErrors(handleGET);
+export const POST = withErrors(handlePOST);

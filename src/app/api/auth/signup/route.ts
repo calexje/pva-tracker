@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { User } from "@/models";
 import { signupSchema } from "@/lib/validate";
 import { hashPassword, createSession } from "@/lib/auth";
+import { withErrors } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   await db();
   const body = await req.json().catch(() => ({}));
   const parsed = signupSchema.safeParse(body);
@@ -26,3 +27,5 @@ export async function POST(req: NextRequest) {
   await createSession(user._id.toString());
   return NextResponse.json({ ok: true }, { status: 201 });
 }
+
+export const POST = withErrors(handlePOST);

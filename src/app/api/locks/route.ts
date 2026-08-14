@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { Lock } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { monthSchema } from "@/lib/validate";
+import { withErrors } from "@/lib/route";
 
-export async function GET() {
+async function handleGET() {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -12,7 +13,7 @@ export async function GET() {
   return NextResponse.json({ locks });
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true }, { status: 201 });
 }
 
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -40,3 +41,7 @@ export async function DELETE(req: NextRequest) {
   await Lock.deleteOne({ userId, month });
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withErrors(handleGET);
+export const POST = withErrors(handlePOST);
+export const DELETE = withErrors(handleDELETE);

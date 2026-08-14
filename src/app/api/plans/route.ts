@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { Plan, Category, isLocked, LOCKED_ERROR } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { planSchema, rangeSchema } from "@/lib/validate";
+import { withErrors } from "@/lib/route";
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** Upsert a monthly target. Rejected when the month is locked. */
-export async function PUT(req: NextRequest) {
+async function handlePUT(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -54,3 +55,6 @@ export async function PUT(req: NextRequest) {
   );
   return NextResponse.json({ plan });
 }
+
+export const GET = withErrors(handleGET);
+export const PUT = withErrors(handlePUT);

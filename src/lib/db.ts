@@ -9,7 +9,11 @@ if (!cached) cached = (global as any)._mongoose = { conn: null, promise: null };
 export async function db() {
   if (cached!.conn) return cached!.conn;
   if (!uri) throw new Error("MONGODB_URI is not set");
-  if (!cached!.promise) cached!.promise = mongoose.connect(uri);
+  // 5s instead of the 30s default: a serverless function has no business
+  // holding a request open for half a minute because the database is
+  // unreachable. Misconfiguration should surface fast.
+  if (!cached!.promise)
+    cached!.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
   try {
     cached!.conn = await cached!.promise;
   } catch (err) {

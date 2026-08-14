@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { User } from "@/models";
 import { verifyPassword, createSession } from "@/lib/auth";
+import { withErrors } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   await db();
   const { email, password } = await req.json().catch(() => ({}));
   const user = email && (await User.findOne({ email: String(email).toLowerCase() }));
@@ -15,3 +16,5 @@ export async function POST(req: NextRequest) {
   await createSession(user._id.toString());
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withErrors(handlePOST);

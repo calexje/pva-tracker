@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { Actual, Category, isLocked, LOCKED_ERROR } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { actualSchema, rangeSchema } from "@/lib/validate";
+import { withErrors } from "@/lib/route";
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ actuals });
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -51,3 +52,6 @@ export async function POST(req: NextRequest) {
   const actual = await Actual.create({ userId, ...parsed.data });
   return NextResponse.json({ actual }, { status: 201 });
 }
+
+export const GET = withErrors(handleGET);
+export const POST = withErrors(handlePOST);

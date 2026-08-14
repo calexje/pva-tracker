@@ -3,13 +3,14 @@ import { db } from "@/lib/db";
 import { Actual, Category, Lock } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { parseCsv } from "@/lib/validate";
+import { withErrors } from "@/lib/route";
 
 /**
  * DECISION: import is atomic — any invalid row (bad month, unknown
  * category, bad amount, locked month) rejects the whole file with
  * line-numbered errors, so a partial import can never surprise the user.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -46,3 +47,5 @@ export async function POST(req: NextRequest) {
   const docs = await Actual.insertMany(parsed.rows.map((r) => ({ userId, ...r })));
   return NextResponse.json({ imported: docs.length }, { status: 201 });
 }
+
+export const POST = withErrors(handlePOST);

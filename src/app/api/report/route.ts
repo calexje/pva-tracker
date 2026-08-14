@@ -5,8 +5,9 @@ import { Plan, Actual, Category, Lock } from "@/models";
 import { currentUserId } from "@/lib/auth";
 import { rangeSchema } from "@/lib/validate";
 import { buildReport, type ReportInput } from "@/lib/variance";
+import { withErrors } from "@/lib/route";
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const userId = await currentUserId();
   if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   await db();
@@ -73,3 +74,5 @@ export async function GET(req: NextRequest) {
     lockedMonths: (locks as any[]).map((l) => l.month),
   });
 }
+
+export const GET = withErrors(handleGET);
