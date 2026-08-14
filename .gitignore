@@ -1,0 +1,45 @@
+# dependencies & build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# environment — real values never leave this machine
+.env
+.env.local
+.env*.local
+
+# local credential scratch files
+creds
+creds.*
+secrets
+secrets.*
+*.pem
+*.key
+
+# editor & OS noise
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# working notes and agent tooling — not part of the deliverable
+CLAUDE.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.continue/
+.github/copilot-instructions.md
+
+# the assignment brief itself — CrossVal's document, not my work
+docs/plan-vs-actual-tracker.pdf
+
+# deploy tooling
+.vercel/
+
+# logs & coverage
+*.log
+npm-debug.log*
+yarn-error.log*
+coverage/
