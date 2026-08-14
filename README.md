@@ -5,9 +5,12 @@ with locked (read-only) periods. Built for the CrossVal take-home assignment.
 
 **Live URL:** https://pva-tracker.vercel.app
 
+**Walkthrough (5 min):** https://www.loom.com/share/b0d6246e95f743a790361915c0672a75
+
 **Demo login:** `demo@example.com` / `password123` — pre-loaded with the
 brief's sample data, including the deliberately unlogged Marketing 2026-02
-cell so the unallocated case is visible on the first screen.
+cell so the unallocated case is visible on the first screen. 2026-01 is left
+locked, so the read-only behaviour is visible without setting it up.
 
 ## Stack
 
