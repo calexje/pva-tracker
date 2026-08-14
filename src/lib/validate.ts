@@ -12,7 +12,19 @@ export const signupSchema = z.object({
 });
 
 export const categorySchema = z.object({
-  name: z.string().trim().min(1, "Category name is required").max(60),
+  // No commas: the CSV import format is comma-delimited with no quoted-field
+  // support, so a category whose name contained one could never be imported.
+  // Rejecting it at creation is honest; accepting it and failing at import
+  // time with "expected 3 fields" would not be.
+  name: z
+    .string()
+    .trim()
+    .min(1, "Category name is required")
+    .max(60)
+    .refine((n) => !n.includes(","), {
+      message:
+        "Category names cannot contain a comma, because the CSV import format is comma-delimited.",
+    }),
 });
 
 export const planSchema = z.object({

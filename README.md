@@ -28,7 +28,7 @@ Node/TypeScript/MongoDB stack.
    loads the brief's sample data. (`npm run seed` runs plain Node, which does
    not read `.env`, so pass the flag or prefix `MONGODB_URI=` inline.)
 5. `npm run dev` → http://localhost:3000
-6. `npm test` — the calculation test suite (pinned to the brief's sample table).
+6. `npm test` — the calculation and CSV suites (see **Tests** below).
 7. `npx tsc --noEmit` — type-check; this is what the production build runs.
 
 Or sign up fresh, add categories (e.g. Marketing, Payroll), set targets, log
@@ -112,6 +112,13 @@ written, so one bad row rejects the whole file with line-numbered errors and
 nothing is inserted. A partial import can silently skew a report; a rejected
 file with exact line numbers is fixable in seconds.
 
+**Format constraint.** The parser splits on commas with no quoted-field
+support, which is all the brief's format requires. The consequence is that a
+category name containing a comma could never be imported — the row would split
+into four fields and fail with "expected 3 fields", an error that tells the
+user nothing useful. Category creation therefore rejects commas up front, with
+a message that explains why. RFC 4180 quoting is in *What I'd improve*.
+
 To be precise about the guarantee: validation is what makes it atomic, not the
 write. The insert is `insertMany`, not a transaction, so the promise is "no row
 is written until every row has passed validation" rather than "the write itself
@@ -190,7 +197,8 @@ item under *What I'd improve*.
 ## Assumptions & tradeoffs
 
 - Category CRUD is create-only (no rename/delete) — assignment scope; the
-  report handles a deleted-category edge defensively regardless.
+  report handles a deleted-category edge defensively regardless. Because there
+  is no rename path, the comma restriction only needs enforcing at creation.
 - Actuals are append-only entries (no edit/delete in scope); corrections can
   be handled by an offsetting entry. In production I'd add edit with an audit
   trail.
@@ -211,7 +219,8 @@ item under *What I'd improve*.
 - Category rename/merge with referential handling; actual entry edit/delete
   with history.
 - E2E tests (Playwright) over the lock-enforcement and scoping paths.
-- CSV: file upload + preview-before-commit flow.
+- CSV: RFC 4180 quoted-field parsing, which would lift the comma restriction
+  on category names; plus file upload and a preview-before-commit flow.
 
 ## AI tooling
 

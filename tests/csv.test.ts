@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCsv } from "../src/lib/validate";
+import { parseCsv, categorySchema } from "../src/lib/validate";
 
 /** name(lower) -> id, as the import route builds it from the user's categories. */
 const cats = new Map([
@@ -105,6 +105,24 @@ describe("CSV import: error reporting", () => {
     const r = parseCsv("month,category,amount\n2026-01,Marketing,100\n\n\n", cats);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.rows).toHaveLength(1);
+  });
+
+  /**
+   * The parser splits on commas with no quoted-field support, so a category
+   * name containing a comma would produce four fields and fail with "expected
+   * 3 fields" — an error that tells the user nothing useful. Category creation
+   * therefore rejects commas up front, and these two tests are a pair: the
+   * constraint exists only because of the format below it.
+   */
+  it("a category name containing a comma is rejected at creation", () => {
+    expect(categorySchema.safeParse({ name: "Sales, EMEA" }).success).toBe(false);
+    expect(categorySchema.safeParse({ name: "Sales EMEA" }).success).toBe(true);
+  });
+
+  it("documents why: a comma in a field breaks the row into four", () => {
+    const r = parseCsv("month,category,amount\n2026-01,Sales, EMEA,100\n", cats);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]).toContain("expected 3 fields, got 4");
   });
 
   it("reports every bad row, not just the first", () => {
